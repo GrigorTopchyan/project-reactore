@@ -1,40 +1,32 @@
 package edu.training.java.asynchronous_create;
 
 import edu.training.java.synchronous_generate.FluxSequenceGenerator;
+import org.assertj.core.api.Assertions;
+import org.junit.Test;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.FluxSink;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
-public class SequenceCreator {
-    public Consumer<List<Integer>> consumer;
+public class SequenceCreatorTest {
 
-    public Flux<Integer>  createNumberSequence() {
-        return Flux.create(sink -> this.consumer = items -> items.forEach(i -> this.slowSink(sink,i)));
-    }
-
-    private void slowSink(FluxSink<Integer> sink,Integer i){
-        try {
-            Thread.sleep(1000);
-            sink.next(i);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void main(String[] args) throws InterruptedException {
+    @Test
+    public void whenCreatingNumbersThenSequenceIsProducedAsynchronously() throws InterruptedException {
         FluxSequenceGenerator sequenceGenerator = new FluxSequenceGenerator();
         List<Integer> sequence1 = sequenceGenerator.generateFibonacciSequence().take(3).collectList().block();
         List<Integer> sequence2 = sequenceGenerator.generateFibonacciSequence().take(4).collectList().block();
+        List<Integer> result = new ArrayList<>();
 
         SequenceCreator sequenceCreator = new SequenceCreator();
         Flux<Integer> sequence = sequenceCreator.createNumberSequence();
         Thread producingThread1 = new Thread(() -> sequenceCreator.consumer.accept(sequence1));
         Thread producingThread2 = new Thread(() -> sequenceCreator.consumer.accept(sequence2));
-        sequence.subscribe(System.out::println);
+        sequence.subscribe(result::add);
         producingThread1.start();
         producingThread2.start();
+        producingThread1.join();
+        producingThread2.join();
+
+        Assertions.assertThat(result).containsExactlyInAnyOrder(0, 1, 1, 0, 1, 1, 2);
     }
 }

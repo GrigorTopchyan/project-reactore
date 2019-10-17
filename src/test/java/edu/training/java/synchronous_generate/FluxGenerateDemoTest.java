@@ -1,6 +1,5 @@
-package edu.training.java.synchronous_create;
+package edu.training.java.synchronous_generate;
 
-import edu.training.java.synchronous_generate.FluxSequenceGenerator;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
