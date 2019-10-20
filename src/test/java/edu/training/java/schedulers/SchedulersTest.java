@@ -82,8 +82,8 @@ public class SchedulersTest {
                 .map(el -> this.identityWithThreadLogging(el,"map1"))
                 .flatMap(el -> {
                     if (el == 1) return createMonoOnScheduler(el,Schedulers.parallel());
-                    if (el == 1) return createMonoOnScheduler(el,Schedulers.elastic());
-                    if (el == 1) return createMonoOnScheduler(el,Schedulers.single());
+                    if (el == 2) return createMonoOnScheduler(el,Schedulers.elastic());
+                    if (el == 3) return createMonoOnScheduler(el,Schedulers.single());
                     return Mono.error(new Exception("error")).subscribeOn(Schedulers.newSingle("error-thread"));
                 })
                 .map(el -> this.identityWithThreadLogging(el,"map2"))
@@ -96,7 +96,7 @@ public class SchedulersTest {
     }
 
     private <T> T identityWithThreadLogging(T el,String operation){
-        System.out.println(operation + " -- " + el + " -- " + Thread.currentThread().getName() + (Thread.currentThread().isDaemon()? " is diamon": "is not diamon"));
+        System.out.println(operation + " -- " + el + " -- " + Thread.currentThread().getName() + (Thread.currentThread().isDaemon()? " is diamon": " is not diamon"));
         return el;
     }
     private <T> Mono<T> createMonoOnScheduler(T el, Scheduler scheduler){
